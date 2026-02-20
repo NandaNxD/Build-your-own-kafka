@@ -8,6 +8,7 @@ import transport.TCPStreamWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class Main {
   public static void main(String[] args){
@@ -25,11 +26,13 @@ public class Main {
 
        TCPStreamReader tcpStreamReader=new TCPStreamReader();
 
-       //byte[] data=tcpStreamReader.readBytes(clientSocket);
+       byte[] data=tcpStreamReader.readBytes(clientSocket);
+
+       KafkaMessageDecoder kafkaMessageDecoder=new KafkaMessageDecoder();
+
+       Message message=kafkaMessageDecoder.decodeMessage(data);
 
        KafkaMessageEncoder kafkaMessageEncoder=new KafkaMessageEncoder();
-
-       Message message=new Message(0,new MessageHeader(7),null);
 
        byte[] encodedMessage=kafkaMessageEncoder.encode(message);
 
