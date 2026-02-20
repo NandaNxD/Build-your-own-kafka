@@ -1,8 +1,13 @@
+import decoder.KafkaMessageDecoder;
+import encoder.KafkaMessageEncoder;
+import message.Message;
+import message.MessageHeader;
+import transport.TCPStreamReader;
+import transport.TCPStreamWriter;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 
 public class Main {
   public static void main(String[] args){
@@ -17,6 +22,20 @@ public class Main {
        serverSocket.setReuseAddress(true);
        // Wait for connection from client.
        clientSocket = serverSocket.accept();
+
+       TCPStreamReader tcpStreamReader=new TCPStreamReader();
+
+       //byte[] data=tcpStreamReader.readBytes(clientSocket);
+
+       KafkaMessageEncoder kafkaMessageEncoder=new KafkaMessageEncoder();
+
+       Message message=new Message(0,new MessageHeader(7),null);
+
+       byte[] encodedMessage=kafkaMessageEncoder.encode(message);
+
+       TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
+
+       tcpStreamWriter.writeBytes(clientSocket,encodedMessage);
 
      } catch (IOException e) {
        System.out.println("IOException: " + e.getMessage());
