@@ -32,6 +32,10 @@ public class Main {
 
        Message message=kafkaMessageDecoder.decodeMessage(data);
 
+       message.setMessageHeader(new MessageHeader(-1,-1,message.getMessageHeader().getCorrelationId()));
+
+       message.setMessageBody(new byte[]{0,0x23});
+
        KafkaMessageEncoder kafkaMessageEncoder=new KafkaMessageEncoder();
 
        byte[] encodedMessage=kafkaMessageEncoder.encode(message);

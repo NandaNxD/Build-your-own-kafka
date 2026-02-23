@@ -7,8 +7,6 @@ import java.net.Socket;
 
 public class TCPStreamReader {
     public byte[] readBytes(Socket clientSocket) throws IOException {
-//        clientSocket.setSoTimeout(1000);
-
         ByteArrayOutputStream buffer=new ByteArrayOutputStream();
 
         InputStream inputStream=clientSocket.getInputStream();
@@ -18,7 +16,7 @@ public class TCPStreamReader {
 
         while ((bytesRead = inputStream.read(temp)) != -1) {
             buffer.write(temp, 0, bytesRead);
-            if(bytesRead>=12){
+            if(bytesRead>=16){
                 break;
             }
         }

@@ -14,6 +14,7 @@ public class KafkaMessageEncoder {
         ByteArrayOutputStream buffer=new ByteArrayOutputStream();
         buffer.write(encodeMessageSize(message));
         buffer.write(encodeMessageHeader(message));
+        buffer.write(message.getMessageBody());
         return buffer.toByteArray();
     }
 
@@ -25,11 +26,32 @@ public class KafkaMessageEncoder {
         return result;
     }
 
-    private byte[] encodeMessageHeader(Message message){
-        byte[] result=new byte[4];
-        for(int i=0;i<4;i++){
-            result[4-i-1]= (byte) ((message.getMessageHeader().getCorrelationId()>>(i*8)) & 0xFF);
+    private byte[] encodeMessageHeader(Message message) throws IOException {
+        ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+
+
+        if(message.getMessageHeader().getRequestApiVersion()!=-1){
+            byte[] encodedRequestApiKeyInBytes=new byte[2];
+            for(int i=0;i<2;i++){
+                encodedRequestApiKeyInBytes[2-i-1]= (byte) ((message.getMessageHeader().getRequestApiKey()>>(i*8)) & 0xFF);
+            }
+            outputStream.write(encodedRequestApiKeyInBytes);
         }
-        return result;
+
+        if(message.getMessageHeader().getRequestApiKey()!=-1){
+            byte[] encodedRequestApiVersionInBytes=new byte[2];
+            for(int i=0;i<2;i++){
+                encodedRequestApiVersionInBytes[2-i-1]= (byte) ((message.getMessageHeader().getRequestApiVersion()>>(i*8)) & 0xFF);
+            }
+            outputStream.write(encodedRequestApiVersionInBytes);
+        }
+
+        byte[] encodedCorrelationIdInBytes=new byte[4];
+        for(int i=0;i<4;i++){
+            encodedCorrelationIdInBytes[4-i-1]= (byte) ((message.getMessageHeader().getCorrelationId()>>(i*8)) & 0xFF);
+        }
+        outputStream.write(encodedCorrelationIdInBytes);
+
+        return outputStream.toByteArray();
     }
 }
