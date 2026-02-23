@@ -1,15 +1,15 @@
 package decoder;
 
-import message.Message;
-import message.MessageHeader;
+import protocol.Request;
+import protocol.RequestHeader;
+import protocol.RequestHeader;
 
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class KafkaMessageDecoder {
+public class KafkaRequestDecoder {
 
-    public Message decodeMessage(byte[] data){
+    public Request decodeRequest(byte[] data){
 
         int messageSize=ByteBuffer.wrap(Arrays.copyOfRange(data,0,0+4)).getInt();
 
@@ -19,7 +19,7 @@ public class KafkaMessageDecoder {
 
         int correlationId=ByteBuffer.wrap(Arrays.copyOfRange(data,8,8+4)).getInt();
 
-        return new Message(messageSize,new MessageHeader(requestApiKey,requestApiVersion,correlationId),null);
+        return new Request(messageSize,new RequestHeader(requestApiKey,requestApiVersion,correlationId),null);
     }
 
 }

@@ -1,14 +1,15 @@
-import decoder.KafkaMessageDecoder;
-import encoder.KafkaMessageEncoder;
-import message.Message;
-import message.MessageHeader;
+import decoder.KafkaRequestDecoder;
+import encoder.KafkaResponseEncoder;
+import protocol.Request;
+import protocol.Response;
+import protocol.ResponseBody;
+import protocol.ResponseHeader;
 import transport.TCPStreamReader;
 import transport.TCPStreamWriter;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 
 public class Main {
   public static void main(String[] args){
@@ -28,21 +29,21 @@ public class Main {
 
        byte[] data=tcpStreamReader.readBytes(clientSocket);
 
-       KafkaMessageDecoder kafkaMessageDecoder=new KafkaMessageDecoder();
+       KafkaRequestDecoder kafkaMessageDecoder=new KafkaRequestDecoder();
 
-       Message message=kafkaMessageDecoder.decodeMessage(data);
+       Request request=kafkaMessageDecoder.decodeRequest(data);
 
-       message.setMessageHeader(new MessageHeader(-1,-1,message.getMessageHeader().getCorrelationId()));
+       Response response=new Response(0,
+               new ResponseHeader(request.getRequestHeader().getCorrelationId())
+               ,new ResponseBody(new byte[]{0,0x23}));
 
-       message.setMessageBody(new byte[]{0,0x23});
+       KafkaResponseEncoder kafkaMessageEncoder=new KafkaResponseEncoder();
 
-       KafkaMessageEncoder kafkaMessageEncoder=new KafkaMessageEncoder();
-
-       byte[] encodedMessage=kafkaMessageEncoder.encode(message);
+       byte[] encodedResponse=kafkaMessageEncoder.encode(response);
 
        TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
 
-       tcpStreamWriter.writeBytes(clientSocket,encodedMessage);
+       tcpStreamWriter.writeBytes(clientSocket,encodedResponse);
 
      } catch (IOException e) {
        System.out.println("IOException: " + e.getMessage());

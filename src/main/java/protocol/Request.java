@@ -1,16 +1,15 @@
-package message;
+package protocol;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
-public class Message {
+public class Request {
     private int messageSize;
-    private MessageHeader messageHeader;
-    private byte[] messageBody;
+    private RequestHeader requestHeader;
+    private RequestBody requestBody;
 
 }
