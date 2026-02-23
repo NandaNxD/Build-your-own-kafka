@@ -30,8 +30,6 @@ public class TCPStreamReader {
             messageSize-=bytesRead;
         }
 
-        System.out.println(buffer.toByteArray().length);
-
        return buffer.toByteArray();
     }
 }
