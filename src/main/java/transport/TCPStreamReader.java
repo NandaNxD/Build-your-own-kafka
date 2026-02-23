@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 public class TCPStreamReader {
     public byte[] readBytes(Socket clientSocket) throws IOException {
@@ -11,15 +12,25 @@ public class TCPStreamReader {
 
         InputStream inputStream=clientSocket.getInputStream();
 
-        byte[] temp = new byte[1024];
-        int bytesRead;
+        /**
+         * Message size is 4 bytes long field
+         */
+        byte[] messageSizeInBytes=new byte[4];
+        inputStream.read(messageSizeInBytes);
 
-        while ((bytesRead = inputStream.read(temp)) != -1) {
+        buffer.write(messageSizeInBytes);
+
+        int messageSize=ByteBuffer.wrap(messageSizeInBytes).getInt();
+
+        byte[] temp = new byte[messageSize];
+        int bytesRead=0;
+
+        while (bytesRead<messageSize && ((bytesRead = inputStream.read(temp)) != -1)) {
             buffer.write(temp, 0, bytesRead);
-            if(bytesRead>=16){
-                break;
-            }
+            messageSize-=bytesRead;
         }
+
+        System.out.println(buffer.toByteArray().length);
 
        return buffer.toByteArray();
     }
