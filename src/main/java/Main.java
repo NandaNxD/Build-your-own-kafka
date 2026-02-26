@@ -48,7 +48,15 @@ public class Main {
 
                             int errorCode=(request.getRequestHeader().getRequestApiVersion()>=0 && request.getRequestHeader().getRequestApiVersion()<=4)?0:35;
                             ArrayList<ApiKey> apiKeyArrayList=new ArrayList<>();
+                            /**
+                             * ApiVersions api
+                             */
                             apiKeyArrayList.add(new ApiKey(18,0,4,null));
+
+                            /**
+                             * DescribeTopicPartitions
+                             */
+                            apiKeyArrayList.add(new ApiKey(75,0,0,null));
 
                             CompactArray<ApiKey> apiKeysCompactArray= new CompactArray<>(apiKeyArrayList, ApiKey.class);
 
