@@ -21,43 +21,57 @@ public class Main {
     public static void main(String[] args){
 
         ServerSocket serverSocket = null;
-        Socket clientSocket = null;
+
         int port = 9092;
         try {
+
             serverSocket = new ServerSocket(port);
 
             serverSocket.setReuseAddress(true);
 
-            clientSocket = serverSocket.accept();
+            ServerSocket finalServerSocket = serverSocket;
 
-            TCPStreamReader tcpStreamReader=new TCPStreamReader();
+            while(true){
+                Socket clientSocket = finalServerSocket.accept();
 
-            byte[] data=null;
+                Thread.startVirtualThread(()->{
+                    try{
+                        TCPStreamReader tcpStreamReader=new TCPStreamReader();
 
-            while((data=tcpStreamReader.readMessage(clientSocket))!=null){
-                KafkaRequestDecoder kafkaMessageDecoder=new KafkaRequestDecoder();
+                        byte[] data=null;
 
-                Request request=kafkaMessageDecoder.decodeRequest(data);
+                        while((data=tcpStreamReader.readMessage(clientSocket))!=null){
+                            KafkaRequestDecoder kafkaMessageDecoder=new KafkaRequestDecoder();
 
-
-                int errorCode=(request.getRequestHeader().getRequestApiVersion()>=0 && request.getRequestHeader().getRequestApiVersion()<=4)?0:35;
-                ArrayList<ApiKey> apiKeyArrayList=new ArrayList<>();
-                apiKeyArrayList.add(new ApiKey(18,0,4,null));
-
-                CompactArray<ApiKey> apiKeysCompactArray= new CompactArray<>(apiKeyArrayList, ApiKey.class);
-
-                Response response=new Response(null,
-                        new ResponseHeader(request.getRequestHeader().getCorrelationId())
-                        ,new ApiVersionsResponseBody(errorCode,apiKeysCompactArray,0,null));
+                            Request request=kafkaMessageDecoder.decodeRequest(data);
 
 
-                KafkaResponseEncoder kafkaMessageEncoder=new KafkaResponseEncoder();
+                            int errorCode=(request.getRequestHeader().getRequestApiVersion()>=0 && request.getRequestHeader().getRequestApiVersion()<=4)?0:35;
+                            ArrayList<ApiKey> apiKeyArrayList=new ArrayList<>();
+                            apiKeyArrayList.add(new ApiKey(18,0,4,null));
 
-                byte[] encodedResponse=kafkaMessageEncoder.encode(response);
+                            CompactArray<ApiKey> apiKeysCompactArray= new CompactArray<>(apiKeyArrayList, ApiKey.class);
 
-                TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
+                            Response response=new Response(null,
+                                    new ResponseHeader(request.getRequestHeader().getCorrelationId())
+                                    ,new ApiVersionsResponseBody(errorCode,apiKeysCompactArray,0,null));
 
-                tcpStreamWriter.writeBytes(clientSocket,encodedResponse);
+
+                            KafkaResponseEncoder kafkaMessageEncoder=new KafkaResponseEncoder();
+
+                            byte[] encodedResponse=kafkaMessageEncoder.encode(response);
+
+                            TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
+
+                            tcpStreamWriter.writeBytes(clientSocket,encodedResponse);
+                        }
+                    } catch (IOException e) {
+                        System.out.println("Closed connection");
+                    }
+                    catch (Exception e){
+                        throw new RuntimeException(e.getMessage());
+                    }
+                });
             }
 
         } catch (IOException e) {
@@ -65,13 +79,7 @@ public class Main {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            try {
-                if (clientSocket != null) {
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                System.out.println("IOException: " + e.getMessage());
-            }
+            System.out.println("Finished executing");
         }
     }
 }
