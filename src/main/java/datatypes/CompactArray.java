@@ -19,8 +19,10 @@ public class CompactArray<T> {
 
         /**
          * Write VarInt length of compact array first
+         *
+         * Adding 1 because thats how its supposed to be
          */
-        outputStream.write(Util.convertIntegerToVarIntBytes(arrayList.size()));
+        outputStream.write(Util.convertIntegerToVarIntBytes(arrayList.size()+1));
 
         /**
          * Write each and every element in list to bytes
