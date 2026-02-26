@@ -38,14 +38,17 @@ public class ApiVersionsResponseBody implements ResponseBody {
     public byte[] encode() throws Exception {
         ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
         outputStream.write(Util.encodeINT16(errorCode));
-        outputStream.write(apiKeys.encode());
-        outputStream.write(Util.encodeINT32(throttleTime_ms));
-        if(tagBuffer!=null){
-            throw new Exception("Tag buffer encoding not implemented in ApiVersionsResponseBody");
+        if(errorCode==0){
+            outputStream.write(apiKeys.encode());
+            outputStream.write(Util.encodeINT32(throttleTime_ms));
+            if(tagBuffer!=null){
+                throw new Exception("Tag buffer encoding not implemented in ApiVersionsResponseBody");
+            }
+            else{
+                outputStream.write(0);
+            }
         }
-        else{
-            outputStream.write(0);
-        }
+
         return outputStream.toByteArray();
     }
 

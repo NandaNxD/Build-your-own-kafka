@@ -18,55 +18,58 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Main {
-  public static void main(String[] args){
+    public static void main(String[] args){
 
-     ServerSocket serverSocket = null;
-     Socket clientSocket = null;
-     int port = 9092;
-     try {
-       serverSocket = new ServerSocket(port);
+        ServerSocket serverSocket = null;
+        Socket clientSocket = null;
+        int port = 9092;
+        try {
+            serverSocket = new ServerSocket(port);
 
-       serverSocket.setReuseAddress(true);
+            serverSocket.setReuseAddress(true);
 
-       clientSocket = serverSocket.accept();
+            clientSocket = serverSocket.accept();
 
-       TCPStreamReader tcpStreamReader=new TCPStreamReader();
+            TCPStreamReader tcpStreamReader=new TCPStreamReader();
 
-       byte[] data=tcpStreamReader.readBytes(clientSocket);
+            byte[] data=tcpStreamReader.readBytes(clientSocket);
 
-       KafkaRequestDecoder kafkaMessageDecoder=new KafkaRequestDecoder();
+            KafkaRequestDecoder kafkaMessageDecoder=new KafkaRequestDecoder();
 
-       Request request=kafkaMessageDecoder.decodeRequest(data);
+            Request request=kafkaMessageDecoder.decodeRequest(data);
 
-       ArrayList<ApiKey> apiKeyArrayList=new ArrayList<>();
-       apiKeyArrayList.add(new ApiKey(18,0,4,null));
 
-       CompactArray<ApiKey> apiKeysCompactArray= new CompactArray<>(apiKeyArrayList, ApiKey.class);
+            int errorCode=(request.getRequestHeader().getRequestApiVersion()>=0 && request.getRequestHeader().getRequestApiVersion()<=4)?0:35;
+            ArrayList<ApiKey> apiKeyArrayList=new ArrayList<>();
+            apiKeyArrayList.add(new ApiKey(18,0,4,null));
 
-       Response response=new Response(null,
-               new ResponseHeader(request.getRequestHeader().getCorrelationId())
-               ,new ApiVersionsResponseBody(0,apiKeysCompactArray,0,null));
+            CompactArray<ApiKey> apiKeysCompactArray= new CompactArray<>(apiKeyArrayList, ApiKey.class);
 
-       KafkaResponseEncoder kafkaMessageEncoder=new KafkaResponseEncoder();
+            Response response=new Response(null,
+                    new ResponseHeader(request.getRequestHeader().getCorrelationId())
+                    ,new ApiVersionsResponseBody(errorCode,apiKeysCompactArray,0,null));
 
-       byte[] encodedResponse=kafkaMessageEncoder.encode(response);
 
-       TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
+            KafkaResponseEncoder kafkaMessageEncoder=new KafkaResponseEncoder();
 
-       tcpStreamWriter.writeBytes(clientSocket,encodedResponse);
+            byte[] encodedResponse=kafkaMessageEncoder.encode(response);
 
-     } catch (IOException e) {
-       System.out.println("IOException: " + e.getMessage());
-     } catch (Exception e) {
-         throw new RuntimeException(e);
-     } finally {
-       try {
-         if (clientSocket != null) {
-           clientSocket.close();
-         }
-       } catch (IOException e) {
-         System.out.println("IOException: " + e.getMessage());
-       }
-     }
-  }
+            TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
+
+            tcpStreamWriter.writeBytes(clientSocket,encodedResponse);
+
+        } catch (IOException e) {
+            System.out.println("IOException: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (clientSocket != null) {
+                    clientSocket.close();
+                }
+            } catch (IOException e) {
+                System.out.println("IOException: " + e.getMessage());
+            }
+        }
+    }
 }
