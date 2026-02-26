@@ -7,7 +7,19 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 public class TCPStreamReader {
-    public byte[] readBytes(Socket clientSocket) throws IOException {
+
+    private void readFully(InputStream in, byte[] buffer) throws IOException {
+        int offset = 0;
+        while (offset < buffer.length) {
+            int n = in.read(buffer, offset, buffer.length - offset);
+            offset += n;
+            if (n == -1) {
+                throw new IOException("Stream closed before reading fully");
+            }
+        }
+    }
+
+    public byte[] readMessage(Socket clientSocket) throws IOException {
         ByteArrayOutputStream buffer=new ByteArrayOutputStream();
 
         InputStream inputStream=clientSocket.getInputStream();
@@ -16,19 +28,17 @@ public class TCPStreamReader {
          * Message size is 4 bytes long field
          */
         byte[] messageSizeInBytes=new byte[4];
-        inputStream.read(messageSizeInBytes);
+        readFully(inputStream,messageSizeInBytes);
 
         buffer.write(messageSizeInBytes);
 
         int messageSize=ByteBuffer.wrap(messageSizeInBytes).getInt();
 
-        byte[] temp = new byte[messageSize];
-        int bytesRead=0;
+        byte[] message = new byte[messageSize];
 
-        while (bytesRead<messageSize && ((bytesRead = inputStream.read(temp)) != -1)) {
-            buffer.write(temp, 0, bytesRead);
-            messageSize-=bytesRead;
-        }
+        readFully(inputStream,message);
+
+        buffer.write(message);
 
        return buffer.toByteArray();
     }

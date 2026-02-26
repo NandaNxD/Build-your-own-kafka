@@ -32,31 +32,33 @@ public class Main {
 
             TCPStreamReader tcpStreamReader=new TCPStreamReader();
 
-            byte[] data=tcpStreamReader.readBytes(clientSocket);
+            byte[] data=null;
 
-            KafkaRequestDecoder kafkaMessageDecoder=new KafkaRequestDecoder();
+            while((data=tcpStreamReader.readMessage(clientSocket))!=null){
+                KafkaRequestDecoder kafkaMessageDecoder=new KafkaRequestDecoder();
 
-            Request request=kafkaMessageDecoder.decodeRequest(data);
-
-
-            int errorCode=(request.getRequestHeader().getRequestApiVersion()>=0 && request.getRequestHeader().getRequestApiVersion()<=4)?0:35;
-            ArrayList<ApiKey> apiKeyArrayList=new ArrayList<>();
-            apiKeyArrayList.add(new ApiKey(18,0,4,null));
-
-            CompactArray<ApiKey> apiKeysCompactArray= new CompactArray<>(apiKeyArrayList, ApiKey.class);
-
-            Response response=new Response(null,
-                    new ResponseHeader(request.getRequestHeader().getCorrelationId())
-                    ,new ApiVersionsResponseBody(errorCode,apiKeysCompactArray,0,null));
+                Request request=kafkaMessageDecoder.decodeRequest(data);
 
 
-            KafkaResponseEncoder kafkaMessageEncoder=new KafkaResponseEncoder();
+                int errorCode=(request.getRequestHeader().getRequestApiVersion()>=0 && request.getRequestHeader().getRequestApiVersion()<=4)?0:35;
+                ArrayList<ApiKey> apiKeyArrayList=new ArrayList<>();
+                apiKeyArrayList.add(new ApiKey(18,0,4,null));
 
-            byte[] encodedResponse=kafkaMessageEncoder.encode(response);
+                CompactArray<ApiKey> apiKeysCompactArray= new CompactArray<>(apiKeyArrayList, ApiKey.class);
 
-            TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
+                Response response=new Response(null,
+                        new ResponseHeader(request.getRequestHeader().getCorrelationId())
+                        ,new ApiVersionsResponseBody(errorCode,apiKeysCompactArray,0,null));
 
-            tcpStreamWriter.writeBytes(clientSocket,encodedResponse);
+
+                KafkaResponseEncoder kafkaMessageEncoder=new KafkaResponseEncoder();
+
+                byte[] encodedResponse=kafkaMessageEncoder.encode(response);
+
+                TCPStreamWriter tcpStreamWriter=new TCPStreamWriter();
+
+                tcpStreamWriter.writeBytes(clientSocket,encodedResponse);
+            }
 
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
