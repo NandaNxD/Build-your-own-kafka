@@ -3,13 +3,10 @@ package protocol.apiversions;
 import datatypes.CompactArray;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import protocol.ResponseBody;
+import protocol.response.ResponseBody;
 import util.Util;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
 
 @Data
 @AllArgsConstructor

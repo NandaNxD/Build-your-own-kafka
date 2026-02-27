@@ -1,7 +1,7 @@
 package protocol.apiversions;
 
 import lombok.Data;
-import protocol.RequestBody;
+import protocol.request.RequestBody;
 
 @Data
 public class ApiVersionsRequestBody extends RequestBody {

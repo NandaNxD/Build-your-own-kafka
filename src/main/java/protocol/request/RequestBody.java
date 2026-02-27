@@ -1,4 +1,4 @@
-package protocol;
+package protocol.request;
 
 public class RequestBody {
 }

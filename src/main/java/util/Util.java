@@ -1,8 +1,14 @@
 package util;
 
+import models.DecodedResponse;
+
 import java.io.ByteArrayOutputStream;
 
 public class Util {
+
+    public static byte[] encodeNullableINT8(int value){
+        return new byte[]{(byte) (value)};
+    }
     public static byte[] encodeINT16(int value){
         return encodeInteger(2,value);
     }
@@ -34,5 +40,22 @@ public class Util {
         }
 
         return outputStream.toByteArray();
+    }
+
+    public static DecodedResponse<Integer> decodeVarInt(byte[] data, int offset){
+        boolean end=false;
+        int result=0;
+
+        int bytesRead=0;
+
+        while(!end){
+            result |=(data[offset]&127)<<8*bytesRead;
+            if((data[offset]&128)==0){
+                end=true;
+            }
+            offset++;
+            bytesRead++;
+        }
+        return new DecodedResponse<>(result,bytesRead);
     }
 }

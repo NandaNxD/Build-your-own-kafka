@@ -1,4 +1,4 @@
-package protocol;
+package protocol.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

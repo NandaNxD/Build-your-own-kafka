@@ -1,4 +1,4 @@
-package protocol;
+package protocol.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -39,14 +39,29 @@ public class Response {
         return result;
     }
 
-    private byte[] encodeResponseHeader() throws IOException {
+    private byte[] encodeResponseHeader() throws Exception {
         ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
 
         byte[] encodedCorrelationIdInBytes=new byte[4];
-        for(int i=0;i<4;i++){
-            encodedCorrelationIdInBytes[4-i-1]= (byte) ((getResponseHeader().getCorrelationId()>>(i*8)) & 0xFF);
+
+        if(getResponseHeader().getClass()== ResponseHeaderV0.class){
+            for(int i=0;i<4;i++){
+                encodedCorrelationIdInBytes[4-i-1]= (byte) ((((ResponseHeaderV0)getResponseHeader()).getCorrelationId()>>(i*8)) & 0xFF);
+            }
+            outputStream.write(encodedCorrelationIdInBytes);
         }
-        outputStream.write(encodedCorrelationIdInBytes);
+        else if(getResponseHeader().getClass()== ResponseHeaderV1.class){
+            for(int i=0;i<4;i++){
+                encodedCorrelationIdInBytes[4-i-1]= (byte) ((((ResponseHeaderV0)getResponseHeader()).getCorrelationId()>>(i*8)) & 0xFF);
+            }
+            outputStream.write(encodedCorrelationIdInBytes);
+            if(((ResponseHeaderV1)getResponseHeader()).getTagBuffer()!=null){
+                throw new Exception("Tag buffer not null encoding not implemented in encodeResponse header in Response v1");
+            }
+            else{
+                outputStream.write(0);
+            }
+        }
 
         return outputStream.toByteArray();
     }
