@@ -52,7 +52,7 @@ public class Response {
         }
         else if(getResponseHeader().getClass()== ResponseHeaderV1.class){
             for(int i=0;i<4;i++){
-                encodedCorrelationIdInBytes[4-i-1]= (byte) ((((ResponseHeaderV0)getResponseHeader()).getCorrelationId()>>(i*8)) & 0xFF);
+                encodedCorrelationIdInBytes[4-i-1]= (byte) ((((ResponseHeaderV1)getResponseHeader()).getCorrelationId()>>(i*8)) & 0xFF);
             }
             outputStream.write(encodedCorrelationIdInBytes);
             if(((ResponseHeaderV1)getResponseHeader()).getTagBuffer()!=null){
