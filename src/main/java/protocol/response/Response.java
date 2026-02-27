@@ -59,7 +59,7 @@ public class Response {
                 throw new Exception("Tag buffer not null encoding not implemented in encodeResponse header in Response v1");
             }
             else{
-                outputStream.write(0);
+                outputStream.write(new byte[]{0});
             }
         }
 
