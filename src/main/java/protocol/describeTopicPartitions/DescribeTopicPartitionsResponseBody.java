@@ -26,7 +26,7 @@ public class DescribeTopicPartitionsResponseBody implements ResponseBody {
     @Override
     public byte[] encode() throws Exception {
         ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
-        outputStream.write(throttleTime_ms);
+        outputStream.write(Util.encodeINT32(throttleTime_ms));
         outputStream.write(topics.encode());
         outputStream.write(Util.encodeNullableINT8(next_cursor));
 
