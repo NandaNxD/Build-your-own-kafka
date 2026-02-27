@@ -13,6 +13,7 @@ import protocol.response.ResponseHeader;
 import protocol.apiversions.ApiKey;
 import protocol.apiversions.ApiVersionsResponseBody;
 import protocol.response.ResponseHeaderV0;
+import protocol.response.ResponseHeaderV1;
 import transport.TCPStreamReader;
 import transport.TCPStreamWriter;
 
@@ -100,7 +101,7 @@ public class Main {
                                 CompactArray<TopicResponse> topicResponseCompactArray=new CompactArray<>(topicResponseArrayList, TopicResponse.class);
 
                                 Response response=new Response(null,
-                                        new ResponseHeaderV0(request.getRequestHeader().getCorrelationId())
+                                        new ResponseHeaderV1(request.getRequestHeader().getCorrelationId(),null)
                                         ,new DescribeTopicPartitionsResponseBody(0,topicResponseCompactArray,-1,null));
 
 
