@@ -49,7 +49,7 @@ public class Util {
         int bytesRead=0;
 
         while(!end){
-            result |=(data[offset]&127)<<8*bytesRead;
+            result |=(data[offset]&127)<<7*bytesRead;
             if((data[offset]&128)==0){
                 end=true;
             }
