@@ -17,7 +17,7 @@ public class TopicRequest {
         ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
         outputStream.write(topicName.encode());
 
-        if(tagBuffer==null){
+        if(tagBuffer!=null){
             throw new Exception("Tag buffer not null condition not implemented in topic encode");
         }
         else{
