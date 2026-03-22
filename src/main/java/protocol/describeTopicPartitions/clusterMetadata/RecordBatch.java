@@ -1,8 +1,16 @@
 package protocol.describeTopicPartitions.clusterMetadata;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import models.DecodedResponse;
+import util.Util;
+
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@AllArgsConstructor
 public class RecordBatch{
 
     /**
@@ -96,8 +104,69 @@ public class RecordBatch{
 
     List<Record> recordList;
 
-    RecordBatch decode(FileInputStream fileInputStream, long offset) throws Exception {
-        throw new Exception("Function not implemented");
+    public static DecodedResponse<RecordBatch> decode(byte[] data, long offset) throws Exception {
+        long offsetAtFunctionStart=offset;
+
+        /**
+         * Reading record batch
+         */
+        long baseOffset=Util.readINT64FromBytes(data,(int)offset);
+        offset+=8;
+
+        int batchLength=Util.readINT32FromBytes(data,(int)offset);
+        offset+=4;
+
+        int partitionLeaderEpoch=Util.readINT32FromBytes(data,(int)offset);
+        offset+=4;
+
+        byte magicByte=data[(int)offset];
+        offset+=1;
+
+        int crc=Util.readINT32FromBytes(data,(int)offset);
+        offset+=4;
+
+        short attributes=Util.readINT16FromBytes(data,(int)offset);
+        offset+=2;
+
+
+        int lastOffsetDelta=Util.readINT32FromBytes(data,(int) offset);
+        offset+=4;
+
+        long baseTimestamp=Util.readINT64FromBytes(data,(int) offset);
+        offset+=8;
+
+        long maxTimestamp=Util.readINT64FromBytes(data,(int) offset);
+        offset+=8;
+
+        long producerId=Util.readINT64FromBytes(data,(int) offset);
+        offset+=8;
+
+        short producerEpoch=Util.readINT16FromBytes(data,(int) offset);
+        offset+=2;
+
+        int baseSequence=Util.readINT32FromBytes(data,(int) offset);
+        offset+=4;
+
+        int recordsLength=Util.readINT32FromBytes(data,(int) offset);
+        offset+=4;
+
+        List<Record> records=new ArrayList<>();
+
+        for(int i=0;i<recordsLength;i++){
+            /**
+             * Read all the record in the batch
+             */
+            DecodedResponse<Record> recordDecodedResponse=Record.decode(data,offset);
+            offset+=recordDecodedResponse.getBytesRead();
+            records.add(recordDecodedResponse.getContent());
+        }
+
+        long totalBytesRead=offset-offsetAtFunctionStart;
+
+        return new DecodedResponse<>(
+                new RecordBatch(baseOffset,batchLength,partitionLeaderEpoch,magicByte,crc,attributes,lastOffsetDelta,baseTimestamp
+                        ,maxTimestamp,producerId,producerEpoch,baseSequence,recordsLength,records),
+                totalBytesRead);
     }
 
 }

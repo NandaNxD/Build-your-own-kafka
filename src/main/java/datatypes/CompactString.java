@@ -35,7 +35,7 @@ public class CompactString{
 
         int offsetBeforeRead=offset;
 
-        DecodedResponse<Integer> decodedCompactStringLength=Util.decodeVarInt(data,offset);
+        DecodedResponse<Integer> decodedCompactStringLength=Util.readUnsignedVarInt(data,offset);
         offset+= (int) decodedCompactStringLength.getBytesRead();
 
         int stringLength=decodedCompactStringLength.getContent()-1;

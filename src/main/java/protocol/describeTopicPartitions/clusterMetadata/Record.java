@@ -1,7 +1,15 @@
 package protocol.describeTopicPartitions.clusterMetadata;
 
-import java.io.FileInputStream;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import models.DecodedResponse;
+import util.Util;
 
+import java.io.FileInputStream;
+import java.util.Arrays;
+
+@Data
+@AllArgsConstructor
 public class Record {
     /**
      * Length is a signed variable size integer indicating the length of the record,
@@ -36,7 +44,7 @@ public class Record {
     /**
      * Key is a byte array indicating the key of the record.
      */
-    int key;
+    byte[] key;
 
     /**
      * Value Length is a signed variable size integer indicating the length of the value of the record.
@@ -56,8 +64,50 @@ public class Record {
     // VARINT
     int headerArrayCount;
 
-    Record decode(FileInputStream fileInputStream,long offset) throws Exception {
-        throw new Exception("Function not implemented");
+    public static DecodedResponse<Record> decode(byte[] data, long offset) throws Exception {
+        long offsetAtStart=offset;
+
+        DecodedResponse<Integer> decodedLength =Util.readSignedVarInt(data,(int)offset);
+        int length=decodedLength.getContent();
+
+        offset+=decodedLength.getBytesRead();
+
+        byte attributes=data[(int)offset];
+        offset++;
+
+        DecodedResponse<Integer> decodedTimestampDelta=Util.readSignedVarInt(data,(int) offset);
+        int timestampDelta=decodedTimestampDelta.getContent();
+        offset+=decodedLength.getBytesRead();
+
+        DecodedResponse<Integer> decodedOffsetDelta=Util.readSignedVarInt(data,(int) offset);
+        int offsetDelta=decodedOffsetDelta.getContent();
+        offset+=decodedOffsetDelta.getBytesRead();
+
+
+        DecodedResponse<Integer> decodedKeyLength=Util.readSignedVarInt(data,(int) offset);
+        int keyLength=decodedKeyLength.getContent();
+        offset+=decodedKeyLength.getBytesRead();
+
+        byte[] key= Arrays.copyOfRange(data,(int)offset,(int)offset+keyLength);
+        offset+=keyLength;
+
+        DecodedResponse<Integer> decodedValueLength=Util.readSignedVarInt(data,(int) offset);
+        int valueLength=decodedValueLength.getContent();
+        offset+=decodedValueLength.getBytesRead();
+
+        DecodedResponse<FeatureLevelRecord> decodedFeatureLevelRecord=FeatureLevelRecord.decode(data,offset);
+        FeatureLevelRecord featureLevelRecord=decodedFeatureLevelRecord.getContent();
+        offset+=decodedFeatureLevelRecord.getBytesRead();
+
+        DecodedResponse<Integer> decodedHeaderArrayCount=Util.readSignedVarInt(data,(int) offset);
+        int headerArrayCount=decodedHeaderArrayCount.getContent();
+        offset+=decodedHeaderArrayCount.getBytesRead();
+
+        long bytesRead=offset-offsetAtStart;
+
+        return new DecodedResponse<>(
+                new Record(length,attributes,timestampDelta,offsetDelta,keyLength,key,valueLength,featureLevelRecord,headerArrayCount),
+                bytesRead);
     }
 
 }

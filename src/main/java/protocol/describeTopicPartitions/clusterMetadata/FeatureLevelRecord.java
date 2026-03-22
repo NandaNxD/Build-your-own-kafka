@@ -1,9 +1,15 @@
 package protocol.describeTopicPartitions.clusterMetadata;
 
 import datatypes.CompactString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import models.DecodedResponse;
+import util.Util;
 
 import java.io.FileInputStream;
 
+@Data
+@AllArgsConstructor
 public class FeatureLevelRecord {
     /**
      * Frame Version is a 1-byte integer indicating the version of the format of the record.
@@ -48,8 +54,36 @@ public class FeatureLevelRecord {
     // VARINT
     int taggedFields;
 
-    FeatureLevelRecord decode(FileInputStream fileInputStream,long offset) throws Exception {
-        throw new Exception("Function not implemented");
+    public static DecodedResponse<FeatureLevelRecord> decode(byte[] data, long offset) throws Exception {
+        long offsetBeforeStart=offset;
+
+        byte frameVersion=data[(int)offset];
+        offset++;
+        byte type=data[(int)offset];
+        offset++;
+        byte version=data[(int)offset];
+        offset++;
+
+        DecodedResponse<CompactString> decodedName =CompactString.decode(data,(int)offset);
+
+        int nameLength=decodedName.getContent().getValue().length()+1;
+
+        offset+=decodedName.getBytesRead();
+
+        short featureLevel=Util.readINT16FromBytes(data,nameLength);
+
+        offset+=2;
+
+        DecodedResponse<Integer> decodedTaggedFields=Util.readSignedVarInt(data,(int)offset);
+        offset+=decodedTaggedFields.getBytesRead();
+
+        int taggedFields=decodedTaggedFields.getContent();
+
+        long bytesRead=offset-offsetBeforeStart;
+
+        return new DecodedResponse<>(
+                new FeatureLevelRecord(frameVersion,type,version,nameLength,decodedName.getContent(),featureLevel,taggedFields),
+                bytesRead);
     }
 
 }

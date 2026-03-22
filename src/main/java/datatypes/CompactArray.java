@@ -59,7 +59,7 @@ public class CompactArray<T> {
 
         int offsetBeforeReading=offset;
 
-        DecodedResponse<Integer> decodedCompactArrayLength=Util.decodeVarInt(data,offset);
+        DecodedResponse<Integer> decodedCompactArrayLength=Util.readUnsignedVarInt(data,offset);
         offset+= (int) decodedCompactArrayLength.getBytesRead();
 
         int compactArrayLength=decodedCompactArrayLength.getContent()-1;
