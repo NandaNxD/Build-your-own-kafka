@@ -70,7 +70,7 @@ public class FeatureLevelRecord {
 
         offset+=decodedName.getBytesRead();
 
-        short featureLevel=Util.readINT16FromBytes(data,nameLength);
+        short featureLevel=Util.readINT16FromBytes(data,(int)offset);
 
         offset+=2;
 
