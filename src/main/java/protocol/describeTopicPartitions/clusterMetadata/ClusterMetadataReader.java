@@ -11,7 +11,7 @@ import java.io.IOException;
 @Data
 @AllArgsConstructor
 public class ClusterMetadataReader {
-    public ClusterMetadata readClusterMetadata(String filePath) throws Exception {
+    public static ClusterMetadata readClusterMetadata(String filePath) throws Exception {
         FileInputStream fileInputStream=new FileInputStream(filePath);
         byte data[]=fileInputStream.readAllBytes();
 
